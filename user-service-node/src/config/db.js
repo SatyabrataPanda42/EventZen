@@ -1,10 +1,11 @@
+require("dotenv").config()
 const mongoose = require("mongoose")
 
 const connectDB = async () => {
 
     try{
 
-        await mongoose.connect("mongodb://localhost:27017/event_users")
+        await mongoose.connect(process.env.MONGO_URI)
 
         console.log("MongoDB connected")
 
