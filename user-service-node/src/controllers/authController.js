@@ -44,9 +44,11 @@ exports.register = async (req, res) => {
 
         await user.save()
 
+        const { password: _, ...userWithoutPassword } = user.toObject()
+
         res.status(201).json({
             message: "User registered successfully",
-            user
+            user: userWithoutPassword
         })
 
     } catch (error) {
@@ -75,9 +77,12 @@ exports.login = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
+        {
+        id: user._id,
+        role: user.role
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
         )
 
         res.json({ token })
@@ -98,4 +103,27 @@ exports.users = async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: error.message })
     }
+}
+
+
+//Update user to vendor
+exports.updateRole = async (req,res)=>{
+
+    try{
+
+        const { id } = req.params
+        const { role } = req.body
+
+        const user = await User.findByIdAndUpdate(
+            id,
+            { role },
+            { new:true }
+        ).select("-password")
+
+        res.json(user)
+
+    }catch(error){
+        res.status(500).json({message:error.message})
+    }
+
 }

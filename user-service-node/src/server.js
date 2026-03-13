@@ -7,7 +7,7 @@ const connectDB = require("./config/db")
 const authRoutes = require("./routes/authRoutes")
 
 const app = express()
-
+console.log("JWT_SECRET:", process.env.JWT_SECRET)
 app.use(cors())
 app.use(express.json())
 
