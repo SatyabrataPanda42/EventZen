@@ -2,6 +2,8 @@ package com.event.venue_service.service;
 
 import com.event.venue_service.model.Venue;
 import com.event.venue_service.repository.VenueRepository;
+import com.event.venue_service.security.ResourceNotFoundException;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,20 +29,28 @@ public class VenueService {
         return repo.findById(id).orElse(null);
     }
 
-    public Venue update(Long id, Venue venue) {
+    public Venue update(Long id, Venue venue, String vendorId) {
 
-        Venue existing = repo.findById(id).orElseThrow();
+    Venue existing = repo.findById(id).orElseThrow();
 
-        existing.setName(venue.getName());
-        existing.setLocation(venue.getLocation());
-        existing.setCapacity(venue.getCapacity());
-        existing.setPrice(venue.getPrice());
-        existing.setAvailable(venue.isAvailable());
-
-        return repo.save(existing);
+    if(!existing.getVendorId().equals(vendorId)){
+        throw new ResourceNotFoundException("Unauthorized: You cannot edit this venue");
     }
+
+    existing.setName(venue.getName());
+    existing.setLocation(venue.getLocation());
+    existing.setCapacity(venue.getCapacity());
+    existing.setPrice(venue.getPrice());
+    existing.setAvailable(venue.isAvailable());
+
+    return repo.save(existing);
+}
 
     public void delete(Long id) {
-        repo.deleteById(id);
-    }
+
+    Venue venue = repo.findById(id)
+            .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+
+    repo.delete(venue);
+}
 }
