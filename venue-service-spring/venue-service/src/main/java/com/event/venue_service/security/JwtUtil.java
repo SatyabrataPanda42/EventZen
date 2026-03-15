@@ -25,9 +25,5 @@ public class JwtUtil {
         return claims.get("role", String.class);
     }
 
-    public String extractUserId(String token) {
-
-        Claims claims = extractClaims(token);
-        return claims.get("id", String.class);
-    }
+    
 }
