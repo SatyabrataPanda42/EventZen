@@ -17,4 +17,12 @@ public class GlobalExceptionHandler {
                         "error", ex.getMessage()
                 ));
     }
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<?> handleNotFound(UnauthorizedException ex) {
+
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of(
+                        "error", ex.getMessage()
+                ));
+    }
 }

@@ -43,7 +43,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 String role = claims.get("role", String.class);
                 String userId = claims.get("id", String.class);
 
-                System.out.println("JWT ROLE: " + role);
+                // System.out.println("JWT ROLE: " + role);
 
                 SimpleGrantedAuthority authority =
                         new SimpleGrantedAuthority(role);

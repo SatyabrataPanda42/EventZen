@@ -72,4 +72,13 @@ public class VenueController {
 
         return venue.isAvailable();
     }
+    @GetMapping("/my")
+@PreAuthorize("hasAuthority('vendor')")
+public List<Venue> getVendorVenues(Authentication auth){
+
+    String vendorId = auth.getName();
+
+    return service.getVendorVenues(vendorId);
+
+}
 }

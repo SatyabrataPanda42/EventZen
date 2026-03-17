@@ -49,12 +49,12 @@ public Event create(HttpServletRequest request,
     }
 
     @PutMapping("/{id}")
-    public Event update(@RequestHeader("Authorization") String token,
+    public Event update(HttpServletRequest request,
                         @PathVariable Long id,
                         @RequestBody Event event){
 
-        String role=jwt.getRole(token);
-        String userId=jwt.getUserId(token);
+        String role = (String) request.getAttribute("role");
+        String userId = (String) request.getAttribute("userId");
 
         return service.update(id,event,role,userId);
     }
@@ -85,5 +85,14 @@ public VenueResponse testVenue(@PathVariable Long id){
 @GetMapping("/hello")
 public String hello(){
     return "Event service running";
+}
+@GetMapping("/{id}")
+public Event getById(
+        @RequestHeader(value="Authorization", required=false) String token,
+        @PathVariable Long id){
+
+    System.out.println("TOKEN RECEIVED: " + token);
+
+    return service.getById(id);
 }
 }

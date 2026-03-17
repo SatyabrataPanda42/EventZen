@@ -1,4 +1,4 @@
-package com.eventservice.event_service.security;
+package com.event.booking_service.security;
 
 import io.jsonwebtoken.Claims;
 
@@ -49,7 +49,6 @@ public class JwtFilter extends OncePerRequestFilter {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Invalid JWT Token");
                 return;
-
             }
         }
 

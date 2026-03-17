@@ -8,7 +8,7 @@ public class VenueServiceApplication {
 
 	public static void main(String[] args) {
 		SpringApplication.run(VenueServiceApplication.class, args);
-		System.out.println("App is Running");
+		System.out.println("Venue service is Running");
 	}
 
 }

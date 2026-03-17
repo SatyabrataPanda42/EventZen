@@ -60,7 +60,12 @@ catch(Exception e){
     public List<Event> getByVenue(Long venueId){
         return repo.findByVenueId(venueId);
     }
+        public Event getById(Long id){
 
+    return repo.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Event not found"));
+}
     public Event update(Long id,Event event,String role,String userId){
 
         Event existing=repo.findById(id)
@@ -94,4 +99,5 @@ catch(Exception e){
 }
         repo.delete(event);
     }
+
 }
