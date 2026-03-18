@@ -12,4 +12,5 @@ public interface EventRepository extends JpaRepository<Event,Long>{
     Optional<Event> findByVenueIdAndDate(Long venueId, LocalDate date);
 
     List<Event> findByVenueId(Long venueId);
+    List<Event> findByCreatedBy(String createdBy);
 }

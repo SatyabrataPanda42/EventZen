@@ -33,8 +33,7 @@ public class EventService {
     try{
 
     venue = venueClient.getVenue(event.getVenueId());
-
-    System.out.println("VENUE FOUND: " + venue.getId());
+    event.setVendorId(userId);  
 
 }
 catch(Exception e){
@@ -56,6 +55,9 @@ catch(Exception e){
     public List<Event> getAll(){
         return repo.findAll();
     }
+    public List<Event> getByVendor(String userId){
+    return repo.findByCreatedBy(userId);
+}
 
     public List<Event> getByVenue(Long venueId){
         return repo.findByVenueId(venueId);
@@ -99,5 +101,11 @@ catch(Exception e){
 }
         repo.delete(event);
     }
+public Event create(Event event, String userId){
 
+    // ✅ ADD THIS
+    event.setVendorId(userId);
+
+    return repo.save(event);
+}
 }

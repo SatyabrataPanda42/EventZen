@@ -12,6 +12,7 @@ import com.eventservice.event_service.client.VenueClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/events")
 public class EventController {
@@ -38,10 +39,18 @@ public Event create(HttpServletRequest request,
     return service.create(event, role, userId);
 }
 
-    @GetMapping
-    public List<Event> getAll(){
-        return service.getAll();
+   @GetMapping
+public List<Event> getAll(HttpServletRequest request){
+
+    String role = (String) request.getAttribute("role");
+    String userId = (String) request.getAttribute("userId");
+
+    if(role.equals("vendor")){
+        return service.getByVendor(userId);
     }
+
+    return service.getAll();
+}
 
     @GetMapping("/venue/{venueId}")
     public List<Event> getByVenue(@PathVariable Long venueId){
@@ -95,4 +104,5 @@ public Event getById(
 
     return service.getById(id);
 }
+
 }

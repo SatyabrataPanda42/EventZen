@@ -21,4 +21,5 @@ public class Event {
     private Long venueId;
 
     private String createdBy;
+        private String vendorId;
 }

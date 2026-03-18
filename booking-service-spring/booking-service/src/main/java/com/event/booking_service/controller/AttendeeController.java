@@ -2,6 +2,7 @@ package com.event.booking_service.controller;
 
 import java.util.List;
 
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,7 +16,7 @@ import com.event.booking_service.model.Attendee;
 import com.event.booking_service.service.AttendeeService;
 
 import jakarta.servlet.http.HttpServletRequest;
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/attendees")
 public class AttendeeController {
@@ -35,16 +36,16 @@ public class AttendeeController {
         return service.add(req,userId);
     }
 
-    @DeleteMapping("/{id}")
-    public String delete(HttpServletRequest request,
-                         @PathVariable Long id){
+@DeleteMapping("/{id}")
+public String delete(HttpServletRequest request, @PathVariable Long id){
 
-        String userId=(String)request.getAttribute("userId");
+    String userId = (String) request.getAttribute("userId");
+    String role = (String) request.getAttribute("role");
 
-        service.delete(id,userId);
+    service.delete(id, userId, role);
 
-        return "Attendee removed";
-    }
+    return "Deleted";
+}
     @GetMapping("/event/{eventId}")
 public List<Attendee> getAttendeesByEvent(
         HttpServletRequest request,
@@ -53,5 +54,9 @@ public List<Attendee> getAttendeesByEvent(
     String userId = (String) request.getAttribute("userId");
 
     return service.getAttendeesByEvent(eventId,userId);
+}
+@GetMapping("/all")
+public List<Attendee> getAllAttendees() {
+    return service.getAllAttendees(); 
 }
 }

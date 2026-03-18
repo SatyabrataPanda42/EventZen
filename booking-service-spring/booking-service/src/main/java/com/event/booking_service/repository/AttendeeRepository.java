@@ -11,5 +11,6 @@ public interface AttendeeRepository extends JpaRepository<Attendee,Long>{
     List<Attendee> findByBookingId(Long bookingId);
 
     long countByBookingId(Long bookingId);
+    void deleteAllByBookingId(Long bookingId);
     
 }

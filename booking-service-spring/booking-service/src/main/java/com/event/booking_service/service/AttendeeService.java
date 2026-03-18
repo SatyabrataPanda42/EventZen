@@ -64,20 +64,20 @@ public class AttendeeService {
 
         return repo.save(attendee);
     }
-    public void delete(Long id,String userId){
+public void delete(Long id, String userId, String role){
 
-        Attendee attendee=repo.findById(id)
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Attendee not found"));
+    Attendee attendee = repo.findById(id)
+            .orElseThrow(() ->
+                    new ResourceNotFoundException("Attendee not found"));
 
-        if(!attendee.getUserId().equals(userId)){
-
-            throw new UnauthorizedException(
-                    "You can delete only your attendee");
-        }
-
-        repo.delete(attendee);
+    // ❌ Only block if NOT admin AND not owner
+    if(!"admin".equals(role) && !attendee.getUserId().equals(userId)){
+        throw new UnauthorizedException(
+                "You can delete only your attendee");
     }
+
+    repo.delete(attendee);
+}
     public List<Attendee> getAttendeesByEvent(Long eventId,String userId){
 
     Booking booking = bookingRepo.findByEventIdAndUserId(eventId,userId);
@@ -93,5 +93,8 @@ public class AttendeeService {
     }
 
     return attendees;
+}
+public List<Attendee> getAllAttendees() {
+    return repo.findAll(); 
 }
 }

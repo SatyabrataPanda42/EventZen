@@ -1,6 +1,7 @@
 package com.event.venue_service.controller;
 
 import com.event.venue_service.model.Venue;
+import com.event.venue_service.security.UnauthorizedException;
 import com.event.venue_service.service.VenueService;
 
 import org.springframework.http.ResponseEntity;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/venues")
 public class VenueController {
@@ -41,22 +42,43 @@ public class VenueController {
 
         return service.update(id, venue, vendorId);
     }
+@DeleteMapping("/{id}")
+@PreAuthorize("hasAnyAuthority('admin','vendor')")
+public ResponseEntity<?> deleteVenue(@PathVariable Long id,
+                                     Authentication auth) {
 
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAuthority('admin')")
-    public ResponseEntity<?> deleteVenue(@PathVariable Long id) {
+    String userId = auth.getName();
 
-        service.delete(id);
+    Venue venue = service.getById(id);
 
-        return ResponseEntity.ok(
-                Map.of("message", "Venue deleted successfully")
-        );
+    if (!auth.getAuthorities().stream()
+            .anyMatch(a -> a.getAuthority().equals("admin"))) {
+
+        if (!venue.getVendorId().equals(userId)) {
+            throw new UnauthorizedException("You cannot delete this venue");
+        }
     }
+
+    service.delete(id);
+
+    return ResponseEntity.ok(Map.of("message", "Venue deleted successfully"));
+}
 
     @GetMapping
-    public List<Venue> getAllVenues() {
-        return service.getAll();
+@PreAuthorize("hasAnyAuthority('admin','vendor','customer')")
+public List<Venue> getAllVenues(Authentication auth) {
+
+    String role = auth.getAuthorities().iterator().next().getAuthority();
+    String userId = auth.getName();
+
+    if (role.equals("vendor")) {
+        // Vendor → only own venues
+        return service.getVendorVenues(userId);
     }
+
+    // Admin & Customer → all venues
+    return service.getAll();
+}
 
     @GetMapping("/{id}")
     public Venue getVenue(@PathVariable Long id) {

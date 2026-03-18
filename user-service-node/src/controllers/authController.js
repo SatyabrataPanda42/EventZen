@@ -79,7 +79,8 @@ exports.login = async (req, res) => {
         const token = jwt.sign(
         {
         id: user._id,
-        role: user.role
+        role: user.role,
+        name: user.name
         },
         process.env.JWT_SECRET,
         { expiresIn: "1d" }
@@ -105,12 +106,10 @@ exports.users = async (req, res) => {
     }
 }
 
-
-//Update user to vendor
+// Update user role
 exports.updateRole = async (req,res)=>{
 
     try{
-
         const { id } = req.params
         const { role } = req.body
 
@@ -125,5 +124,24 @@ exports.updateRole = async (req,res)=>{
     }catch(error){
         res.status(500).json({message:error.message})
     }
+}; // ✅ THIS WAS MISSING
 
-}
+
+// DELETE USER
+exports.deleteUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({ message: "User deleted successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
