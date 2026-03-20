@@ -2,6 +2,7 @@ package com.event.booking_service.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.event.booking_service.client.VenueClient;
@@ -25,37 +26,39 @@ public class AttendeeService {
     public AttendeeService(
             AttendeeRepository repo,
             BookingRepository bookingRepo,
-            VenueClient venueClient){
+            VenueClient venueClient) {
 
-        this.repo=repo;
-        this.bookingRepo=bookingRepo;
-        this.venueClient=venueClient;
+        this.repo = repo;
+        this.bookingRepo = bookingRepo;
+        this.venueClient = venueClient;
     }
 
-    public Attendee add(AttendeeRequest req,String userId){
+    public Attendee add(AttendeeRequest req, String userId) {
 
-        Booking booking=bookingRepo.findById(req.getBookingId())
-                .orElseThrow(() ->
-                        new ResourceNotFoundException("Booking not found"));
+        Booking booking = bookingRepo.findById(req.getBookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-        if(!booking.getUserId().equals(userId)){
-
+        // 🔒 OWNER CHECK
+        if (!booking.getUserId().equals(userId)) {
             throw new UnauthorizedException(
                     "You can add attendees only to your booking");
         }
 
-        VenueResponse venue=venueClient.getVenue(booking.getVenueId());
-
-        long attendeeCount=
-                repo.countByBookingId(req.getBookingId());
-
-        if(attendeeCount >= venue.getCapacity()){
-
-            throw new BadRequestException(
-                    "Attendee limit reached");
+        // 🔒 LOCK AFTER PAYMENT
+        if (booking.getStatus().equals("CONFIRMED")) {
+            throw new BadRequestException("Booking is locked after payment");
         }
 
-        Attendee attendee=new Attendee();
+        VenueResponse venue = venueClient.getVenue(booking.getVenueId());
+
+        // ✅ NEW CORRECT LOGIC (GLOBAL EVENT CAPACITY)
+        long totalAttendees = repo.countByEventId(booking.getEventId());
+
+        if (totalAttendees >= venue.getCapacity()) {
+            throw new BadRequestException("Event is full");
+        }
+
+        Attendee attendee = new Attendee();
 
         attendee.setBookingId(req.getBookingId());
         attendee.setUserId(userId);
@@ -64,37 +67,53 @@ public class AttendeeService {
 
         return repo.save(attendee);
     }
-public void delete(Long id, String userId, String role){
 
-    Attendee attendee = repo.findById(id)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException("Attendee not found"));
+    public void delete(Long id, String userId, String role) {
 
-    // ❌ Only block if NOT admin AND not owner
-    if(!"admin".equals(role) && !attendee.getUserId().equals(userId)){
-        throw new UnauthorizedException(
-                "You can delete only your attendee");
+        Attendee attendee = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Attendee not found"));
+
+        Booking booking = bookingRepo.findById(attendee.getBookingId())
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
+
+        // 🔴 BLOCK deletion after payment
+        if ("CONFIRMED".equals(booking.getStatus())) {
+            throw new BadRequestException("Cannot remove attendee after payment");
+        }
+
+        // 🔐 Authorization check
+        if (!"admin".equals(role) && !attendee.getUserId().equals(userId)) {
+            throw new UnauthorizedException(
+                    "You can delete only your attendee");
+        }
+
+        repo.delete(attendee);
     }
 
-    repo.delete(attendee);
-}
-    public List<Attendee> getAttendeesByEvent(Long eventId,String userId){
+    public List<Attendee> getByBooking(Long bookingId, String userId) {
 
-    Booking booking = bookingRepo.findByEventIdAndUserId(eventId,userId);
+        Booking booking = bookingRepo.findById(bookingId)
+                .orElseThrow(() -> new ResourceNotFoundException("Booking not found"));
 
-    if(booking == null){
-        throw new ResourceNotFoundException("No booking found for this event");
+        if (!booking.getUserId().equals(userId)) {
+            throw new UnauthorizedException("Not your booking");
+        }
+
+        return repo.findByBookingId(bookingId);
     }
 
-    List<Attendee> attendees = repo.findByBookingId(booking.getId());
+    public List<Attendee> getAllAttendees(String role, String userId) {
 
-    if(attendees.isEmpty()){
-        throw new ResourceNotFoundException("No attendees found");
+        // ✅ ADMIN → see all
+        if (role.equals("admin")) {
+            return repo.findAll(Sort.by(Sort.Direction.DESC, "id"));
+        }
+
+        // ✅ CUSTOMER → only their bookings
+        List<Booking> bookings = bookingRepo.findByUserId(userId);
+
+        return bookings.stream()
+                .flatMap(b -> repo.findByBookingId(b.getId()).stream())
+                .toList();
     }
-
-    return attendees;
-}
-public List<Attendee> getAllAttendees() {
-    return repo.findAll(); 
-}
 }

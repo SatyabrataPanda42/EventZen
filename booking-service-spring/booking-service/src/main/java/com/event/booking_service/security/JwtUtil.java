@@ -1,6 +1,5 @@
 package com.event.booking_service.security;
 
-
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -21,7 +20,7 @@ public class JwtUtil {
         return Jwts.parserBuilder()
                 .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8)))
                 .build()
-                .parseClaimsJws(token.replace("Bearer ",""))
+                .parseClaimsJws(token.replace("Bearer ", ""))
                 .getBody();
     }
 

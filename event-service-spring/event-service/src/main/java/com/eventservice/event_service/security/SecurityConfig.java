@@ -12,27 +12,28 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter){
+    public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
-@Bean
-public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-    http
-        .cors(cors -> {})
-        .csrf(csrf -> csrf.disable())
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        .authorizeHttpRequests(auth -> auth
+        http
+                .cors(cors -> {
+                })
+                .csrf(csrf -> csrf.disable())
 
-                .requestMatchers("/events/hello").permitAll()
-                .requestMatchers("/events/testVenue/**").permitAll()
-                .requestMatchers("/events/**").permitAll()
+                .authorizeHttpRequests(auth -> auth
 
-                .anyRequest().authenticated()
-        )
+                        .requestMatchers("/events/hello").permitAll()
+                        .requestMatchers("/events/testVenue/**").permitAll()
+                        .requestMatchers("/events/**").permitAll()
 
-        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                        .anyRequest().authenticated())
 
-    return http.build();
-}
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
 }

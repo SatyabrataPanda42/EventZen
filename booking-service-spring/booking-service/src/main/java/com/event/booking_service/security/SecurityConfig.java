@@ -14,7 +14,7 @@ public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter){
+    public SecurityConfig(JwtFilter jwtFilter) {
         this.jwtFilter = jwtFilter;
     }
 
@@ -22,18 +22,18 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-         .cors(cors -> {})
-            .csrf(csrf -> csrf.disable())   // disable CSRF
+                .cors(cors -> {
+                })
+                .csrf(csrf -> csrf.disable()) // disable CSRF
 
-            .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/bookings/**").permitAll()
-                    .requestMatchers("/attendees/**").permitAll()
-                    .anyRequest().permitAll()
-            )
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/bookings/**").permitAll()
+                        .requestMatchers("/attendees/**").permitAll()
+                        .anyRequest().permitAll())
 
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 
-            .httpBasic(Customizer.withDefaults());
+                .httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

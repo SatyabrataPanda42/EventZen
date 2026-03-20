@@ -8,5 +8,4 @@ public class EventResponse {
     private Long venueId;
     private String name;
     private String vendorId;
-    }
-
+}

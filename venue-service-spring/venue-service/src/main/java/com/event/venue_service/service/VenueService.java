@@ -1,10 +1,12 @@
 package com.event.venue_service.service;
 
+import com.event.venue_service.client.EventClient;
 import com.event.venue_service.model.Venue;
 import com.event.venue_service.repository.VenueRepository;
 import com.event.venue_service.security.ResourceNotFoundException;
 import com.event.venue_service.security.UnauthorizedException;
 
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -13,9 +15,11 @@ import java.util.List;
 public class VenueService {
 
     private final VenueRepository repo;
+    private final EventClient eventClient;
 
-    public VenueService(VenueRepository repo) {
+    public VenueService(VenueRepository repo, EventClient eventClient) {
         this.repo = repo;
+        this.eventClient = eventClient;
     }
 
     public Venue createVenue(Venue venue) {
@@ -26,40 +30,59 @@ public class VenueService {
         return repo.findAll();
     }
 
-    public Venue getById(Long id){
+    public Venue getById(Long id) {
 
-    return repo.findById(id)
-            .orElseThrow(() ->
-                    new ResourceNotFoundException("Venue not found"));
-}
-
-    public Venue update(Long id, Venue venue, String vendorId) {
-
-    Venue existing = repo.findById(id).orElseThrow();
-
-    if(!existing.getVendorId().equals(vendorId)){
-       throw new UnauthorizedException("You cannot edit this venue");
+        return repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
     }
 
-    existing.setName(venue.getName());
-    existing.setLocation(venue.getLocation());
-    existing.setCapacity(venue.getCapacity());
-    existing.setPrice(venue.getPrice());
-    existing.setAvailable(venue.isAvailable());
+    public Venue update(Long id, Venue venue, String userId, Authentication auth) {
 
-    return repo.save(existing);
-}
+        Venue existing = repo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venue not found"));
 
-    public void delete(Long id) {
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("admin"));
 
-    Venue venue = repo.findById(id)
-            .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+        if (!isAdmin && !existing.getVendorId().equals(userId)) {
+            throw new UnauthorizedException("You cannot update this venue");
+        }
 
-    repo.delete(venue);
-}
-public List<Venue> getVendorVenues(String vendorId){
+        existing.setName(venue.getName());
+        existing.setLocation(venue.getLocation());
+        existing.setCapacity(venue.getCapacity());
+        existing.setPrice(venue.getPrice());
 
-    return repo.findByVendorId(vendorId);
+        return repo.save(existing);
+    }
 
-}
+    public void delete(Long id, String role, String userId) {
+
+        Venue venue = repo.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Venue not found"));
+
+        if (role.equals("customer")) {
+            throw new UnauthorizedException("Not allowed");
+        }
+
+        if (role.equals("vendor") && !venue.getVendorId().equals(userId)) {
+            throw new UnauthorizedException("You can't delete this venue");
+        }
+
+        try {
+            // 🔥 STEP 1: DELETE EVENTS (CASCADE)
+            eventClient.deleteEventsByVenue(id);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete related events");
+        }
+
+        // 🔥 STEP 2: DELETE VENUE
+        repo.deleteById(id);
+    }
+
+    public List<Venue> getVendorVenues(String vendorId) {
+
+        return repo.findByVendorId(vendorId);
+
+    }
 }

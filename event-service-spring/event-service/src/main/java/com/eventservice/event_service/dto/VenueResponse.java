@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class VenueResponse {
-        private boolean available;
+    private boolean available;
     private int capacity;
     private Long id;
     private String location;

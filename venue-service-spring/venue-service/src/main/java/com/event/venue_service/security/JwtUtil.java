@@ -7,8 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtUtil {
 
-    private final String SECRET =
-            "satyabratapandacapstoneproject_secure_key_2026_super";
+    private final String SECRET = "satyabratapandacapstoneproject_secure_key_2026_super";
 
     public Claims extractClaims(String token) {
 
@@ -25,5 +24,4 @@ public class JwtUtil {
         return claims.get("role", String.class);
     }
 
-    
 }

@@ -7,10 +7,11 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.List;
 
-public interface EventRepository extends JpaRepository<Event,Long>{
+public interface EventRepository extends JpaRepository<Event, Long> {
 
     Optional<Event> findByVenueIdAndDate(Long venueId, LocalDate date);
 
     List<Event> findByVenueId(Long venueId);
+
     List<Event> findByCreatedBy(String createdBy);
 }

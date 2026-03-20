@@ -18,6 +18,7 @@ import com.event.booking_service.service.BookingService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.CrossOrigin;
+
 @CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/bookings")
@@ -25,71 +26,83 @@ public class BookingController {
 
     private final BookingService service;
 
-    public BookingController(BookingService service){
-        this.service=service;
+    public BookingController(BookingService service) {
+        this.service = service;
     }
 
     @PostMapping
     public Booking create(HttpServletRequest request,
-                          @RequestBody BookingRequest req){
+            @RequestBody BookingRequest req) {
 
-        String userId=(String)request.getAttribute("userId");
+        String userId = (String) request.getAttribute("userId");
 
-        return service.create(req.getEventId(),userId);
+        return service.create(req.getEventId(), userId);
     }
 
-@DeleteMapping("/{id}")
-public String cancel(HttpServletRequest request,
-                     @PathVariable Long id){
+    @DeleteMapping("/{id}")
+    public String cancel(HttpServletRequest request,
+            @PathVariable Long id) {
 
-    String userId = (String) request.getAttribute("userId");
-    String role = (String) request.getAttribute("role");
+        String userId = (String) request.getAttribute("userId");
+        String role = (String) request.getAttribute("role");
 
-    service.cancel(id, userId, role);
+        service.cancel(id, userId, role);
 
-    return "Cancelled";
-}
+        return "Cancelled";
+    }
+
     @GetMapping("/test")
-    public String test(){
+    public String test() {
         return "Booking service running";
     }
+
     @GetMapping("/debug")
-public String debug(HttpServletRequest request){
-    return "userId=" + request.getAttribute("userId") +
-           " role=" + request.getAttribute("role");
-}
-@GetMapping("/my")
-public List<Booking> getMyBookings(HttpServletRequest request){
-
-    String userId = (String) request.getAttribute("userId");
-
-    return service.getUserBookings(userId);
-}
-@GetMapping("/vendor")
-public List<Booking> getVendorBookings(HttpServletRequest request){
-
-    String vendorId = (String) request.getAttribute("userId");
-
-    return service.getBookingsForVendor(vendorId);
-}
-@GetMapping("/all")
-public List<Booking> getAllBookings(HttpServletRequest request){
-
-    String role = (String) request.getAttribute("role");
-
-    if(!"admin".equals(role)){
-        throw new RuntimeException("Unauthorized");
+    public String debug(HttpServletRequest request) {
+        return "userId=" + request.getAttribute("userId") +
+                " role=" + request.getAttribute("role");
     }
 
-    return service.getAllBookings();
-}
-@PutMapping("/{id}/status")
-public Booking updateStatus(HttpServletRequest request,
-                            @PathVariable Long id,
-                            @RequestBody Map<String, String> body){
+    @GetMapping("/my")
+    public List<Booking> getMyBookings(HttpServletRequest request) {
 
-    String role = (String) request.getAttribute("role");
+        String userId = (String) request.getAttribute("userId");
 
-    return service.updateStatus(id, role, body.get("status"));
-}
+        return service.getUserBookings(userId);
+    }
+
+    @GetMapping("/vendor")
+    public List<Booking> getVendorBookings(HttpServletRequest request) {
+
+        String vendorId = (String) request.getAttribute("userId");
+
+        return service.getBookingsForVendor(vendorId);
+    }
+
+    @GetMapping("/all")
+    public List<Booking> getAllBookings(HttpServletRequest request) {
+
+        String role = (String) request.getAttribute("role");
+
+        if (!"admin".equals(role)) {
+            throw new RuntimeException("Unauthorized");
+        }
+
+        return service.getAllBookings();
+    }
+
+    @PutMapping("/{id}/status")
+    public Booking updateStatus(HttpServletRequest request,
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+
+        String role = (String) request.getAttribute("role");
+
+        return service.updateStatus(id, role, body.get("status"));
+    }
+
+    @DeleteMapping("/event/{eventId}")
+    public String deleteByEvent(@PathVariable Long eventId) {
+        service.deleteBookingsByEvent(eventId);
+        return "Deleted bookings for event";
+    }
 }

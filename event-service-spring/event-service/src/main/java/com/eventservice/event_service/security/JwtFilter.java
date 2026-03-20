@@ -17,7 +17,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    public JwtFilter(JwtUtil jwtUtil){
+    public JwtFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
 
@@ -25,14 +25,13 @@ public class JwtFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest request,
             HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+            FilterChain filterChain) throws ServletException, IOException {
 
         String header = request.getHeader("Authorization");
 
-        if(header != null && header.startsWith("Bearer ")){
+        if (header != null && header.startsWith("Bearer ")) {
 
-            try{
+            try {
 
                 Claims claims = jwtUtil.getClaims(header);
 
@@ -43,8 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
                 request.setAttribute("userId", userId);
                 request.setAttribute("role", role);
 
-            }
-            catch(Exception e){
+            } catch (Exception e) {
 
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("Invalid JWT Token");
@@ -53,6 +51,6 @@ public class JwtFilter extends OncePerRequestFilter {
             }
         }
 
-        filterChain.doFilter(request,response);
+        filterChain.doFilter(request, response);
     }
 }

@@ -24,7 +24,7 @@ public class Venue {
     private boolean available;
 
     @Column(name = "vendor_id")
-private String vendorId;
+    private String vendorId;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

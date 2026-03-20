@@ -21,7 +21,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(JwtUtil jwtUtil,
-                          CustomAccessDeniedHandler accessDeniedHandler) {
+            CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtUtil = jwtUtil;
         this.accessDeniedHandler = accessDeniedHandler;
     }
@@ -36,21 +36,19 @@ public class SecurityConfig {
 
         http
 
-                 .cors(cors -> {})
+                .cors(cors -> {
+                })
                 .csrf(csrf -> csrf.disable())
 
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 .exceptionHandling(exception -> exception
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
+                        .accessDeniedHandler(accessDeniedHandler))
 
                 .addFilterBefore(
                         jwtFilter(),
-                        UsernamePasswordAuthenticationFilter.class
-                );
+                        UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

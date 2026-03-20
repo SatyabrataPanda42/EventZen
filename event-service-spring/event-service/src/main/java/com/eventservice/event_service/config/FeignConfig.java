@@ -16,16 +16,16 @@ public class FeignConfig {
 
         return requestTemplate -> {
 
-            ServletRequestAttributes attributes =
-                    (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder
+                    .getRequestAttributes();
 
-            if(attributes != null){
+            if (attributes != null) {
 
                 HttpServletRequest request = attributes.getRequest();
 
                 String token = request.getHeader("Authorization");
 
-                if(token != null){
+                if (token != null) {
                     requestTemplate.header("Authorization", token);
                 }
 

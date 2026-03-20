@@ -1,131 +1,125 @@
-const User = require("../models/User")
-const bcrypt = require("bcryptjs")
-const jwt = require("jsonwebtoken")
+const User = require("../models/User");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
 //for register
 exports.register = async (req, res) => {
-    try {
+  try {
+    const { name, email, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
 
-        const { name, email, password } = req.body
-        const normalizedEmail = email.toLowerCase().trim()
-
-        // Name validation
-        if (!name || name.length < 3 || name.length > 50) {
-            return res.status(400).json({ message: "Name must be between 3 and 50 characters" })
-        }
-
-        // Password validation
-        if (!password || password.length < 6) {
-            return res.status(400).json({ message: "Password must be at least 6 characters" })
-        }
-
-        // Email format validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-        if (!normalizedEmail || !emailRegex.test(normalizedEmail)) {
-            return res.status(400).json({ message: "Invalid email format" })
-        }
-
-        // Check if email already exists
-        const existingUser = await User.findOne({ email: normalizedEmail })
-
-        if (existingUser) {
-            return res.status(400).json({ message: "Email already exists" })
-        }
-
-        // Hash password
-        const hashed = await bcrypt.hash(password, 10)
-
-        const user = new User({
-            name,
-            email: normalizedEmail,
-            password: hashed
-        })
-
-        await user.save()
-
-        const { password: _, ...userWithoutPassword } = user.toObject()
-
-        res.status(201).json({
-            message: "User registered successfully",
-            user: userWithoutPassword
-        })
-
-    } catch (error) {
-        res.status(500).json({ message: error.message })
+    // Name validation
+    if (!name || name.length < 3 || name.length > 50) {
+      return res
+        .status(400)
+        .json({ message: "Name must be between 3 and 50 characters" });
     }
-}
+
+    // Password validation
+    if (!password || password.length < 6) {
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!normalizedEmail || !emailRegex.test(normalizedEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ email: normalizedEmail });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "Email already exists" });
+    }
+
+    // Hash password
+    const hashed = await bcrypt.hash(password, 10);
+
+    const user = new User({
+      name,
+      email: normalizedEmail,
+      password: hashed,
+    });
+
+    await user.save();
+
+    const { password: _, ...userWithoutPassword } = user.toObject();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userWithoutPassword,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 //For login
 exports.login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
 
-    try {
+    const user = await User.findOne({ email: normalizedEmail });
 
-        const { email, password } = req.body
-        const normalizedEmail = email.toLowerCase().trim()
+    if (!user) {
+      return res.status(401).json({ message: "User not found" });
+    }
 
-        const user = await User.findOne({ email: normalizedEmail })
+    const valid = await bcrypt.compare(password, user.password);
 
-        if (!user) {
-            return res.status(401).json({ message: "User not found" })
-        }
+    if (!valid) {
+      return res.status(401).json({ message: "Invalid password" });
+    }
 
-        const valid = await bcrypt.compare(password, user.password)
-
-        if (!valid) {
-            return res.status(401).json({ message: "Invalid password" })
-        }
-
-        const token = jwt.sign(
-        {
+    const token = jwt.sign(
+      {
         id: user._id,
         role: user.role,
-        name: user.name
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-        )
+        name: user.name,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" },
+    );
 
-        res.json({ token })
-
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
+    res.json({ token });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 //Fetching all users
 exports.users = async (req, res) => {
-    try {
+  try {
+    const users = await User.find().select("-password");
 
-        const users = await User.find().select("-password")
-
-        res.json(users)
-
-    } catch (error) {
-        res.status(500).json({ message: error.message })
-    }
-}
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
 
 // Update user role
-exports.updateRole = async (req,res)=>{
+exports.updateRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
 
-    try{
-        const { id } = req.params
-        const { role } = req.body
+    const user = await User.findByIdAndUpdate(
+      id,
+      { role },
+      { new: true },
+    ).select("-password");
 
-        const user = await User.findByIdAndUpdate(
-            id,
-            { role },
-            { new:true }
-        ).select("-password")
-
-        res.json(user)
-
-    }catch(error){
-        res.status(500).json({message:error.message})
-    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
 }; // ✅ THIS WAS MISSING
-
 
 // DELETE USER
 exports.deleteUser = async (req, res) => {
@@ -139,9 +133,7 @@ exports.deleteUser = async (req, res) => {
     }
 
     res.json({ message: "User deleted successfully" });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
