@@ -100,10 +100,10 @@ public void delete(Long id, String role, String userId){
         throw new UnauthorizedException("You can't delete this event");
     }
 
-    // 🔥 STEP 1: DELETE BOOKINGS (CASCADE)
+    // STEP 1: DELETE BOOKINGS (CASCADE)
     bookingClient.deleteBookingsByEvent(id);
 
-    // 🔥 STEP 2: DELETE EVENT
+    // STEP 2: DELETE EVENT
     repo.deleteById(id);
 }
 public Event create(Event event, String userId){

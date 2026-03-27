@@ -93,7 +93,7 @@ export default function AttendeeMgmt({
   );
 
   const isConfirmed = selectedBooking.status === "CONFIRMED";
-
+const isWaitlist = selectedBooking.status === "WAITLIST";
   // ================= ACTIONS =================
 
   const handleAddGuest = async () => {
@@ -203,7 +203,13 @@ export default function AttendeeMgmt({
 
             <span
               className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider
-              ${isConfirmed ? "bg-green-100 text-green-700 border border-green-200" : "bg-yellow-100 text-yellow-700 border border-yellow-200"}
+              ${
+    isConfirmed
+      ? "bg-green-100 text-green-700 border border-green-200"
+      : isWaitlist
+      ? "bg-yellow-200 text-yellow-800 border border-yellow-300"
+      : "bg-yellow-100 text-yellow-700 border border-yellow-200"
+  }
             `}
             >
               {selectedBooking.status}
@@ -224,7 +230,19 @@ export default function AttendeeMgmt({
                 </div>
 
                 <div className="flex-1">
-                  {filtered.length === 0 ? (
+                  {isWaitlist ? (
+  <div className="flex flex-col items-center justify-center h-full py-20 text-center">
+    <div className="w-16 h-16 bg-yellow-50 rounded-2xl flex items-center justify-center mb-4 text-yellow-400 border border-dashed border-yellow-200">
+      <Users size={32} />
+    </div>
+    <p className="text-yellow-600 font-bold">
+      Event is currently full
+    </p>
+    <p className="text-xs text-yellow-500 mt-1">
+      Please wait until seats become available.
+    </p>
+  </div>
+) : filtered.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full py-20 text-center">
                       <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 text-slate-300 border border-dashed border-slate-200">
                         <Users size={32} />
@@ -291,17 +309,20 @@ export default function AttendeeMgmt({
                   Add Guest
                 </h3>
 
-                {isConfirmed ? (
+               {isConfirmed || isWaitlist ? (
                   <div className="bg-slate-50 p-6 rounded-xl text-center border border-slate-100">
                     <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
                       <Lock size={20} className="text-slate-400" />
                     </div>
-                    <p className="text-sm text-slate-600 font-bold">
-                      Registration Locked
-                    </p>
-                    <p className="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-bold">
-                      Booking is already confirmed
-                    </p>
+                   <p className="text-sm text-slate-600 font-bold">
+  {isWaitlist ? "Waitlisted" : "Registration Locked"}
+</p>
+
+<p className="text-[11px] text-slate-400 mt-1 uppercase tracking-wider font-bold">
+  {isWaitlist
+    ? "No capacity available for this event"
+    : "Booking is already confirmed"}
+</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -386,7 +407,7 @@ export default function AttendeeMgmt({
                     </span>
                   </div>
 
-                  {!isConfirmed && (
+                 {!isConfirmed && !isWaitlist && (
                     <button
                       className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-emerald-100 mt-4 text-sm flex items-center justify-center gap-2 group"
                       onClick={handlePayment}

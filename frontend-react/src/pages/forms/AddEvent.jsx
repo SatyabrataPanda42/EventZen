@@ -65,7 +65,13 @@ export default function AddEvent({
             ))}
           </Input>
 
-          <Input label="Date" name="date" type="date" required />
+          <Input
+  label="Date"
+  name="date"
+  type="date"
+  min={new Date().toISOString().split("T")[0]}
+  required
+/>
 
           <Input
             label="Description"

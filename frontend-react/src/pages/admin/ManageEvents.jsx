@@ -107,7 +107,6 @@ export default function ManageEvents({
       )
     )
       return;
-
     try {
       await api.delete(`${SERVICES.EVENT}/events/${e.id}`);
       if (fetchData) fetchData();

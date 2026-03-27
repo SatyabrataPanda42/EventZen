@@ -70,13 +70,10 @@ public class VenueService {
         }
 
         try {
-            // 🔥 STEP 1: DELETE EVENTS (CASCADE)
             eventClient.deleteEventsByVenue(id);
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete related events");
         }
-
-        // 🔥 STEP 2: DELETE VENUE
         repo.deleteById(id);
     }
 
